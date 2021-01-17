@@ -24,7 +24,7 @@ const LineDivider = () => {
   );
 };
 
-const Home = () => {
+const Home = ({navigation}) => {
   const profileData = {
     name: 'Username',
     point: 200,
@@ -305,7 +305,11 @@ const Home = () => {
             marginLeft: index == 0 ? SIZES.padding : 0,
             marginRight: SIZES.radius,
           }}
-          onPress={() => console.log('My Book')}>
+          onPress={() =>
+            navigation.navigate('BookDetail', {
+              book: item,
+            })
+          }>
           {/* Book Cover  */}
           <Image
             source={item.bookCover}
@@ -448,7 +452,11 @@ const Home = () => {
         <View style={{marginVertical: SIZES.base}}>
           <TouchableOpacity
             style={{flex: 1, flexDirection: 'row'}}
-            onPress={() => console.log('Category Data')}>
+            onPress={() =>
+              navigation.navigate('BookDetail', {
+                book: item,
+              })
+            }>
             {/* Book Cover  */}
             <Image
               source={item.bookCover}

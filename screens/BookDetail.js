@@ -5,10 +5,32 @@ import {
   ImageBackground,
   TouchableOpacity,
   Image,
+  ScrollView,
+  Animated,
 } from 'react-native';
 import {COLORS, FONTS, icons, SIZES} from '../constants';
+
+const LineDivider = () => {
+  return (
+    <View style={{width: 1, paddingVertical: 5}}>
+      <View
+        style={{
+          flex: 1,
+          borderLeftColor: COLORS.lightGray2,
+          borderLeftWidth: 1,
+        }}></View>
+    </View>
+  );
+};
+
 const BookDetail = ({route, navigation}) => {
   const [book, setBook] = React.useState(null);
+  const [scrollViewWholeHeight, setScrollViewWholeHeight] = React.useState(1);
+  const [scrollViewVisibleHeight, setScrollViewVisibleHeight] = React.useState(
+    0,
+  );
+
+  const indicator = new Animated.Value(0);
 
   React.useEffect(() => {
     let {book} = route.params;
@@ -99,6 +121,8 @@ const BookDetail = ({route, navigation}) => {
             resizeMode="contain"
             style={{
               flex: 1,
+              width: 150,
+              height: 'auto',
             }}
           />
         </View>
@@ -106,9 +130,180 @@ const BookDetail = ({route, navigation}) => {
         {/* Book Name and Author  */}
         <View
           style={{flex: 1.8, alignItems: 'center', justifyContent: 'center'}}>
-          <Text>{book.bookName}</Text>
-          <Text>{book.author}</Text>
+          <Text style={{...FONTS.h2, color: book.navTintColor}}>
+            {book.bookName}
+          </Text>
+          <Text style={{...FONTS.h2, color: book.navTintColor}}>
+            {book.author}
+          </Text>
         </View>
+
+        {/* Book Info  */}
+        <View
+          style={{
+            flexDirection: 'row',
+            paddingVertical: 20,
+            margin: SIZES.padding2,
+            borderRadius: SIZES.radius,
+            backgroundColor: 'rgba(0, 0, 0, 0.3)',
+          }}>
+          {/* Rating */}
+          <View style={{flex: 1, alignItems: 'center'}}>
+            <Text style={{...FONTS.h3, color: COLORS.white}}>
+              {book.rating}
+            </Text>
+            <Text style={{...FONTS.body4, color: COLORS.white}}>Rating</Text>
+          </View>
+
+          <LineDivider />
+          {/* Pages */}
+          <View
+            style={{
+              flex: 1,
+              alignItems: 'center',
+              justifyContent: 'center',
+
+              paddingHorizontal: SIZES.radius,
+            }}>
+            <Text style={{...FONTS.h3, color: COLORS.white}}>
+              {book.pageNo}
+            </Text>
+            <Text
+              style={{
+                ...FONTS.body4,
+                color: COLORS.white,
+                textAlign: 'center',
+              }}>
+              Number of pages
+            </Text>
+          </View>
+          <LineDivider />
+          {/* Language */}
+          <View style={{flex: 1, alignItems: 'center'}}>
+            <Text style={{...FONTS.h3, color: COLORS.white}}>
+              {book.language}
+            </Text>
+            <Text style={{...FONTS.body4, color: COLORS.white}}>Language</Text>
+          </View>
+        </View>
+      </View>
+    );
+  };
+
+  const renderBookDescription = () => {
+    const indicatorSize =
+      scrollViewWholeHeight > scrollViewVisibleHeight
+        ? (scrollViewVisibleHeight * scrollViewVisibleHeight) /
+          scrollViewWholeHeight
+        : scrollViewVisibleHeight;
+    const difference =
+      scrollViewVisibleHeight > indicatorSize
+        ? scrollViewVisibleHeight - indicatorSize
+        : 1;
+    return (
+      <View style={{flex: 1, flexDirection: 'row', padding: SIZES.padding}}>
+        {/* Custom ScrollBar  */}
+        <View
+          style={{
+            width: 4,
+            height: '100%',
+            backgroundColor: COLORS.gray1,
+          }}>
+          <Animated.View
+            style={{
+              width: 4,
+              height: indicatorSize,
+              backgroundColor: COLORS.lightGray4,
+              transform: [
+                {
+                  translateY: Animated.multiply(
+                    indicator,
+                    scrollViewVisibleHeight / scrollViewWholeHeight,
+                  ).interpolate({
+                    inputRange: [0, difference],
+                    outputRange: [0, difference],
+                    extrapolate: 'clamp',
+                  }),
+                },
+              ],
+            }}
+          />
+        </View>
+        {/* Description  */}
+        <ScrollView
+          contentContainerStyle={{paddingLeft: SIZES.padding2}}
+          showsVerticalScrollIndicator={false}
+          scrollEventThrottle={16}
+          onContentSizeChange={(width, height) => {
+            setScrollViewWholeHeight(height);
+          }}
+          onLayout={({
+            nativeEvent: {
+              layout: {x, y, width, height},
+            },
+          }) => {
+            setScrollViewVisibleHeight(height);
+          }}
+          onScroll={Animated.event(
+            [{nativeEvent: {contentOffset: {y: indicator}}}],
+            {useNativeDriver: false},
+          )}>
+          <Text
+            style={{
+              ...FONTS.h2,
+              color: COLORS.white,
+              marginBottom: SIZES.padding,
+            }}>
+            Description
+          </Text>
+          <Text style={{...FONTS.body2, color: COLORS.lightGray}}>
+            {book.description}
+          </Text>
+        </ScrollView>
+      </View>
+    );
+  };
+
+  const renderBottomButtons = () => {
+    return (
+      <View style={{flex: 1, flexDirection: 'row'}}>
+        {/* Bookmark  */}
+        <TouchableOpacity
+          style={{
+            width: 60,
+            backgroundColor: COLORS.secondary,
+            marginLeft: SIZES.padding,
+            marginVertical: SIZES.base,
+            borderRadius: SIZES.radius,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+          onpress={() => console.log('Bookmark')}>
+          <Image
+            source={icons.bookmark_icon}
+            resizeMode="contain"
+            style={{
+              width: 25,
+              height: 25,
+              tintColor: COLORS.lightGray2,
+            }}
+          />
+        </TouchableOpacity>
+        {/* Start Reading */}
+
+        <TouchableOpacity
+          style={{
+            flex: 1,
+            backgroundColor: COLORS.primary,
+            marginHorizontal: SIZES.base,
+            marginVertical: SIZES.base,
+            borderRadius: SIZES.radius,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+          onPress={() => console.log('Start reading')}>
+          <Text style={{...FONTS.h3, color: COLORS.white}}>Start Reading</Text>
+        </TouchableOpacity>
       </View>
     );
   };
@@ -119,9 +314,11 @@ const BookDetail = ({route, navigation}) => {
         {/* Book Cover Section */}
         <View style={{flex: 4}}>{renderBookInfoSection()}</View>
         {/* Description  */}
-        <View style={{flex: 2}}></View>
+        <View style={{flex: 2}}>{renderBookDescription()}</View>
         {/* Buttons  */}
-        <View style={{height: 70}}></View>
+        <View style={{height: 70, marginBottom: 30}}>
+          {renderBottomButtons()}
+        </View>
       </View>
     );
   } else {
